@@ -1,24 +1,42 @@
-/*
-
-Move this file to its own repo!
-
-*/
+declare const caches: CacheStorage;
 
 declare global {
   type FetchEventListener = (event: FetchEvent) => void;
 
-  interface FetchEvent extends Event {
+  /** Extends the lifetime of the install and activate events dispatched on the global scope as part of the service worker lifecycle. This ensures that any functional events (like FetchEvent) are not dispatched until it upgrades database schemas and deletes the outdated cache entries. */
+  interface ExtendableEvent extends Event {
+    waitUntil(f: any): void;
+  }
+
+  /** This is the event type for fetch events dispatched on the service worker global scope. It contains information about the fetch, including the request and how the receiver will treat the response. It provides the event.respondWith() method, which allows us to provide a response to this fetch. */
+  interface FetchEvent extends ExtendableEvent {
+    readonly clientId: string;
+    readonly preloadResponse: Promise<any>;
+    readonly replacesClientId: string;
+    readonly request: Request;
+    readonly resultingClientId: string;
+    respondWith(r: Response | Promise<Response>): void;
+  }
+
+  interface FetchEvent extends ExtendableEvent {
     readonly request: Request;
     waitUntil(f: unknown): void;
     respondWith(r: Response | Promise<Response>): void;
   }
 
-  function addEventListener(
-    type: "fetch",
-    callback: FetchEventListener,
-  ): void;
+  interface ServiceWorkerGlobalScopeEventMap {
+    "activate": ExtendableEvent;
+    "fetch": FetchEvent;
+    "install": ExtendableEvent;
+  }
 
-  const caches: CacheStorage;
+  function addEventListener<
+    K extends keyof ServiceWorkerGlobalScopeEventMap,
+  >(
+    type: K,
+    listener: (ev: ServiceWorkerGlobalScopeEventMap[K]) => any,
+    options?: boolean | AddEventListenerOptions,
+  ): void;
 
   interface CacheQueryOptions {
     ignoreMethod?: boolean;
