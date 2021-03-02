@@ -18,6 +18,8 @@ declare global {
     callback: FetchEventListener,
   ): void;
 
+  const caches: CacheStorage;
+
   interface CacheQueryOptions {
     ignoreMethod?: boolean;
     ignoreSearch?: boolean;
