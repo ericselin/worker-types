@@ -1,4 +1,5 @@
 import './service-worker-types.ts';
+
 declare global {
   interface FetchEvent {
     passThroughOnException: () => void;
@@ -583,6 +584,8 @@ declare global {
     public onDocument(handlers: DocumentHandler): HTMLRewriter;
     public transform(response: Response): Response;
   }
+  // Add type here to be able to declare in scripts
+  type IHTMLRewriter = typeof HTMLRewriter;
 
   // declare interface CacheStorage {
   //   default: Cache;
